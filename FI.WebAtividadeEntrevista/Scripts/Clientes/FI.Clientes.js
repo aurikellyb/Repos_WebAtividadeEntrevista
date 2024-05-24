@@ -1,5 +1,11 @@
 ﻿$(document).ready(function () {
-    $('#CPF').mask('000.000.000-00');
+    $('#CPF').mask('000.000.000-00', { reverse: true });
+    $('#CPFBeneficiario').mask('000.000.000-00', { reverse: true });
+
+    $('#btBeneficiario').click(function (event) {
+        event.preventDefault();
+        $('#beneficiarioForms').modal('show');
+    });
 
     $('#formCadastro').submit(function (e) {
         e.preventDefault();
@@ -17,7 +23,7 @@
             url: urlPost,
             method: "POST",
             data: {
-                "NOME": $(this).find("#Nome").val(),
+                "Nome": $(this).find("#Nome").val(),
                 "CEP": $(this).find("#CEP").val(),
                 "Email": $(this).find("#Email").val(),
                 "Sobrenome": $(this).find("#Sobrenome").val(),
@@ -40,23 +46,16 @@
                 function (r) {
                     ModalDialog("Sucesso!", r)
                     $("#formCadastro")[0].reset();
+                    window.location.href = urlRetorno;
                 }
         });
-    })
-
-    $('#btBeneficiario').click(function (event) {
-        event.preventDefault();
-        console.log('Botão clicado');
-        $('#beneficiarioForms').modal('show');
     });
-
-    $('#Beneficiario_CPF').mask('000.000.000-00', { reverse: true });
 
     $('#formIncluirBeneficiario').submit(function (e) {
         e.preventDefault();
 
-        var cpf = $('#Beneficiario_CPF').val();
-        var nome = $('#Beneficiario_Nome').val();
+        var cpf = $('#BeneficiarioCPF').val();
+        var nome = $('#BeneficiarioNome').val();
 
         var newRow = '<tr>' +
             '<td class="hidden-xs hidden"></td>' +
@@ -68,11 +67,11 @@
             '</td>' +
             '</tr>';
 
-        $('#tabelaBeneficiarios tbody').append(newRow);
+        $('#BeneficiarioCPF').val('');
+        $('#BeneficiarioNome').val('');
 
-        $('#Beneficiario_CPF').val('');
-        $('#Beneficiario_Nome').val('');
-    })
+        $('#tabelaBeneficiarios tbody').append(newRow);
+    });
 
     $('#tabelaBeneficiarios').on('click', 'button.btn-excluir', function () {
         var linha = $(this).closest('tr');
@@ -82,38 +81,31 @@
 
     $('#tabelaBeneficiarios').on('click', 'button.btn-alterar', function () {
         var linha = $(this).closest('tr');
+        var cpfColuna = linha.find('td:eq(1)');
+        var nomeColuna = linha.find('td:eq(2)');
 
         if (linha.hasClass('em-edicao')) {
             var inputs = linha.find('input');
-            var valores = [];
+            var novosValores = [];
 
             inputs.each(function () {
-                valores.push($(this).val());
+                novosValores.push($(this).val());
             });
 
-            linha.find('td:eq(1)').text(valores[0]);
-            linha.find('td:eq(2)').text(valores[1]);
+            cpfColuna.text(novosValores[0]);
+            nomeColuna.text(novosValores[1]);
 
-            $(this).text('Alterar');
-            $(this).removeClass('btn-success');
-
+            $(this).text('Alterar').removeClass('btn-success');
             linha.removeClass('em-edicao');
         } else {
-            var tdCPF = linha.find('td:eq(1)');
-            var tdNome = linha.find('td:eq(2)');
-
-            tdCPF.html('<div class="input-group"><input id="beneficiario_Alt_CPF" type="text" class="form-control" style="width: 13rem;" value="' + tdCPF.text() + '"></div>');
-            tdNome.html('<div class="input-group"><input type="text" class="form-control" style="width: 150px;" value="' + tdNome.text() + '"></div>');
+            cpfColuna.html('<div class="input-group"><input id="beneficiario_Alt_CPF" type="text" class="form-control" style="width: 13rem;" value="' + cpfColuna.text() + '"></div>');
+            nomeColuna.html('<div class="input-group"><input type="text" class="form-control" style="width: 150px;" value="' + nomeColuna.text() + '"></div>');
             $('#beneficiario_Alt_CPF').mask('000.000.000-00', { reverse: true });
 
-            $(this).text('Salvar');
-
+            $(this).text('Salvar').addClass('btn-success');
             linha.addClass('em-edicao');
-
-            $(this).addClass('btn-success');
         }
     });
-
 })
 
 function ModalDialog(titulo, texto) {
@@ -134,7 +126,7 @@ function ModalDialog(titulo, texto) {
         '                </div>                                                                                             ' +
         '            </div><!-- /.modal-content -->                                                                         ' +
         '  </div><!-- /.modal-dialog -->                                                                                    ' +
-        '</div> <!-- /.modal -->                                                                                        ';
+        '</div> <!-- /.modal -->                                                                                            ';
 
     $('body').append(texto);
     $('#' + random).modal('show');

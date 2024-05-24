@@ -7,21 +7,24 @@
                 </button>
                 <h4 class="modal-title">Beneficiários</h4>
             </div>
+
             <div class="modal-body">
                 <form id="formIncluirBeneficiario" method="post">
                     <div class="row">
                         <div class="col-md-5">
                             <div class="form-group">
-                                <label for="Beneficiario_CPF">CPF:</label>
-                                <input required="required" type="text" class="form-control" id="Beneficiario_CPF" name="Beneficiario_CPF" placeholder="Ex.: 010.011.111-00" maxlength="14">
+                                <label for="BeneficiarioCPF">CPF:</label>
+                                <input required="required" type="text" class="form-control" id="BeneficiarioCPF" name="BeneficiarioCPF" placeholder="Ex.: 010.011.111-00" maxlength="14">
                             </div>
                         </div>
+
                         <div class="col-md-5">
                             <div class="form-group">
-                                <label for="Beneficiario_Nome">Nome:</label>
-                                <input required="required" type="text" class="form-control" id="Beneficiario_Nome" name="Beneficiario_Nome" placeholder="Ex.: João da silva" maxlength="50">
+                                <label for="BeneficiarioNome">Nome:</label>
+                                <input required="required" type="text" class="form-control" id="BeneficiarioNome" name="BeneficiarioNome" placeholder="Ex.: João da silva" maxlength="50">
                             </div>
                         </div>
+
                         <div class="col-md-2">
                             <div class="form-group" style="margin-top: 0.3rem">
                                 <label for="button"></label>
@@ -30,6 +33,7 @@
                         </div>
                     </div>
                 </form>
+
                 <div class="row">
                     <table id="tabelaBeneficiarios" class="table table-striped">
                         <thead>
@@ -45,6 +49,7 @@
                     </table>
                 </div>
             </div>
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
             </div>

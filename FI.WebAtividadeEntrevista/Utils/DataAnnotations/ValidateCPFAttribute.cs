@@ -51,6 +51,7 @@ public class ValidateCPFAttribute : ValidationAttribute
             soma += int.Parse(cpf[i].ToString()) * multiplicadores[i];
 
         int resto = soma % 11;
+
         return resto < 2 ? 0 : 11 - resto;
     }
 }

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using FI.AtividadeEntrevista.DML;
-using System.Text.RegularExpressions;
 
 namespace WebAtividadeEntrevista.Controllers
 {
@@ -16,34 +15,33 @@ namespace WebAtividadeEntrevista.Controllers
             return View();
         }
 
-
         public ActionResult Incluir()
         {
             return View();
         }
 
         [HttpPost]
-
         public JsonResult Incluir(ClienteModel model)
         {
             BoCliente boCliente = new BoCliente();
             BoBeneficiario boBeneficiario = new BoBeneficiario();
 
-            if (!this.ModelState.IsValid)
+            try
             {
-                List<string> erros = (from item in ModelState.Values
-                                      from error in item.Errors
-                                      select error.ErrorMessage).ToList();
+                if (!this.ModelState.IsValid)
+                {
+                    List<string> erros = (from item in ModelState.Values
+                                          from error in item.Errors
+                                          select error.ErrorMessage).ToList();
 
-                Response.StatusCode = 400;
-                return Json(string.Join(Environment.NewLine, erros));
-            }
-            else
-            {
+                    Response.StatusCode = 400;
+                    return Json(string.Join(Environment.NewLine, erros));
+                }
+
                 if (boCliente.VerificarExistencia(model.CPF))
                 {
                     Response.StatusCode = 400;
-                    return Json("CPF já cadastrado");
+                    return Json("O CPF inserido já está cadastrado");
                 }
 
                 var beneficiariosDuplicados = model.Beneficiarios
@@ -54,11 +52,7 @@ namespace WebAtividadeEntrevista.Controllers
 
                 if (beneficiariosDuplicados.Any())
                 {
-                    string errorMessage = "Beneficiários com CPFs duplicados: ";
-                    foreach (var cpf in beneficiariosDuplicados)
-                    {
-                        errorMessage += cpf + Environment.NewLine;
-                    }
+                    string errorMessage = $"Beneficiários com CPFs duplicados: {string.Join(Environment.NewLine, beneficiariosDuplicados)}";
 
                     Response.StatusCode = 400;
                     return Json(errorMessage);
@@ -90,6 +84,10 @@ namespace WebAtividadeEntrevista.Controllers
 
                 return Json("Cadastro efetuado com sucesso");
             }
+            catch (Exception ex)
+            {
+                return Json(ex.Message);
+            }
         }
 
         [HttpPost]
@@ -98,21 +96,22 @@ namespace WebAtividadeEntrevista.Controllers
             BoCliente boCliente = new BoCliente();
             BoBeneficiario boBeneficiarios = new BoBeneficiario();
 
-            if (!this.ModelState.IsValid)
+            try
             {
-                List<string> erros = (from item in ModelState.Values
-                                      from error in item.Errors
-                                      select error.ErrorMessage).ToList();
+                if (!this.ModelState.IsValid)
+                {
+                    List<string> erros = (from item in ModelState.Values
+                                          from error in item.Errors
+                                          select error.ErrorMessage).ToList();
 
-                Response.StatusCode = 400;
-                return Json(string.Join(Environment.NewLine, erros));
-            }
-            else
-            {
+                    Response.StatusCode = 400;
+                    return Json(string.Join(Environment.NewLine, erros));
+                }
+
                 if (boCliente.VerificarExistencia(model.CPF) && boCliente.Consultar(model.Id)?.CPF != model.CPF)
                 {
                     Response.StatusCode = 400;
-                    return Json("CPF já cadastrado");
+                    return Json("O CPF inserido já está cadastrado");
                 }
 
                 List<Beneficiario> beneficiarios = boBeneficiarios.Listar(model.Id);
@@ -167,11 +166,13 @@ namespace WebAtividadeEntrevista.Controllers
                 }
 
                 foreach (Beneficiario beneficiario in beneficiarios)
-                {
                     boBeneficiarios.Excluir(beneficiario.Id);
-                }
 
                 return Json("Cadastro alterado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return Json(ex.Message);
             }
         }
 
@@ -180,7 +181,8 @@ namespace WebAtividadeEntrevista.Controllers
         {
             Cliente cliente = new BoCliente().Consultar(id);
             List<Beneficiario> beneficiarios = new BoBeneficiario().Listar(cliente.Id);
-            Models.ClienteModel model = null;
+
+            ClienteModel model = null;
 
             if (cliente != null)
             {
@@ -216,25 +218,28 @@ namespace WebAtividadeEntrevista.Controllers
         {
             try
             {
-                int qtd = 0;
-                string campo = string.Empty;
-                string crescente = string.Empty;
-                string[] array = jtSorting.Split(' ');
+                int totalRecords;
+                string sortField = null;
+                bool sortAscending = true;
 
-                if (array.Length > 0)
-                    campo = array[0];
+                if (!string.IsNullOrEmpty(jtSorting))
+                {
+                    var parts = jtSorting.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-                if (array.Length > 1)
-                    crescente = array[1];
+                    if (parts.Length > 0)
+                        sortField = parts[0];
 
-                List<Cliente> clientes = new BoCliente().Pesquisa(jtStartIndex, jtPageSize, campo, crescente.Equals("ASC", StringComparison.InvariantCultureIgnoreCase), out qtd);
+                    if (parts.Length > 1)
+                        sortAscending = string.Equals(parts[1], "ASC", StringComparison.OrdinalIgnoreCase);
+                }
 
-                //Return result to jTable
-                return Json(new { Result = "OK", Records = clientes, TotalRecordCount = qtd });
+                List<Cliente> clientes = new BoCliente().Pesquisa(jtStartIndex, jtPageSize, sortField, sortAscending, out totalRecords);
+
+                return Json(new { Result = "OK", Records = clientes, TotalRecordCount = totalRecords });
             }
             catch (Exception ex)
             {
-                return Json(new { Result = "ERROR", Message = ex.Message });
+                return Json(new { Result = "ERROR", ex.Message });
             }
         }
     }

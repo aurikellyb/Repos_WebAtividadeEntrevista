@@ -16,10 +16,6 @@ $(document).ready(function () {
                     title: 'Nome',
                     width: '50%'
                 },
-                CPF: {
-                    title: 'CPF',
-                    width: '20%'
-                },
                 Email: {
                     title: 'Email',
                     width: '35%'
