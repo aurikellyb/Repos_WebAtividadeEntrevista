@@ -19,7 +19,7 @@ $(document).ready(function () {
                 CPF: {
                     title: 'CPF',
                     width: '20%'
-                }
+                },
                 Email: {
                     title: 'Email',
                     width: '35%'
