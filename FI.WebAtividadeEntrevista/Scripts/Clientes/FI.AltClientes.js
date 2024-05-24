@@ -30,12 +30,12 @@
         });
     }
 
-    $('#CPFBeneficiario').mask('000.000.000-00', { reverse: true });
-
-    $('#btBeneficiarios').click(function (event) {
+    $('#btBeneficiario').click(function (event) {
         event.preventDefault();
-        $('#beneficarioForms').modal('show');
+        $('#BeneficiarioForms').modal('show');
     });
+
+    $('#Beneficiario_CPF').mask('000.000.000-00', { reverse: true });
 
     $('#formCadastro').submit(function (e) {
         e.preventDefault();
@@ -53,7 +53,7 @@
             url: urlPost,
             method: "POST",
             data: {
-                "Nome": $(this).find("#Nome").val(),
+                "NOME": $(this).find("#Nome").val(),
                 "CEP": $(this).find("#CEP").val(),
                 "Email": $(this).find("#Email").val(),
                 "Sobrenome": $(this).find("#Sobrenome").val(),
@@ -84,29 +84,24 @@
     $('#formIncluirBeneficiario').submit(function (e) {
         e.preventDefault();
 
-        const cpf = $('#CPFBeneficiario').val();
-        const nome = $('#NomeBeneficiario').val();
+        var cpf = $('#Beneficiario_CPF').val();
+        var nome = $('#Beneficiario_Nome').val();
 
-        if (!cpf || !nome) {
-            ModalDialog("Erro", "CPF e Nome são obrigatórios.");
-            return;
-        }
-
-        const newRow =
-            `<tr>
-            <td class="hidden-xs hidden"></td>
-            <td>${cpf}</td>
-            <td>${nome}</td>
-            <td class="text-center">
-                <button type="button" class="btn btn-sm btn-primary btn-alterar" style="margin-right: 0.4rem">Alterar</button>
-                <button type="button" class="btn btn-sm btn-primary btn-excluir">Excluir</button>
-            </td>
-            </tr>`;
+        var newRow = '<tr>' +
+            '<td class="hidden-xs hidden"></td>' +
+            '<td>' + cpf + '</td>' +
+            '<td>' + nome + '</td>' +
+            '<td class="text-center">' +
+            '<button type="button" class="btn btn-sm btn-primary btn-alterar" style="margin-right: 0.4rem">Alterar</button>' +
+            '<button type="button" class="btn btn-sm btn-primary btn-excluir">Excluir</button>' +
+            '</td>' +
+            '</tr>';
 
         $('#tabelaBeneficiarios tbody').append(newRow);
 
-        limparCamposBeneficiario();
-    });
+        $('#Beneficiario_CPF').val('');
+        $('#Beneficiario_Nome').val('');
+    })
 
     $('#tabelaBeneficiarios').on('click', 'button.btn-excluir', function () {
         var linha = $(this).closest('tr');
@@ -116,16 +111,38 @@
 
     $('#tabelaBeneficiarios').on('click', 'button.btn-alterar', function () {
         var linha = $(this).closest('tr');
-        var tdCPF = linha.find('td:eq(1)');
-        var tdNome = linha.find('td:eq(2)');
 
         if (linha.hasClass('em-edicao')) {
-            salvarEdicao(linha);
+            var inputs = linha.find('input');
+            var valores = [];
+
+            inputs.each(function () {
+                valores.push($(this).val());
+            });
+
+            linha.find('td:eq(1)').text(valores[0]);
+            linha.find('td:eq(2)').text(valores[1]);
+
+            $(this).text('Alterar');
+            $(this).removeClass('btn-success');
+
+            linha.removeClass('em-edicao');
         } else {
-            entrarModoEdicao(linha, tdCPF, tdNome);
+            var tdCPF = linha.find('td:eq(1)');
+            var tdNome = linha.find('td:eq(2)');
+
+            tdCPF.html('<div class="input-group"><input id="beneficiario_Alt_CPF" type="text" class="form-control" style="width: 13rem;" value="' + tdCPF.text() + '"></div>');
+            tdNome.html('<div class="input-group"><input type="text" class="form-control" style="width: 150px;" value="' + tdNome.text() + '"></div>');
+            $('#beneficiario_Alt_CPF').mask('000.000.000-00', { reverse: true });
+
+            $(this).text('Salvar');
+
+            linha.addClass('em-edicao');
+
+            $(this).addClass('btn-success');
         }
     });
-});
+})
 
 function ModalDialog(titulo, texto) {
     var random = Math.random().toString().replace('.', '');
@@ -149,39 +166,4 @@ function ModalDialog(titulo, texto) {
 
     $('body').append(texto);
     $('#' + random).modal('show');
-}
-
-function limparCamposBeneficiario() {
-    $('#CPFBeneficiario').val('');
-    $('#NomeBeneficiario').val('');
-}
-
-function entrarModoEdicao(linha, tdCPF, tdNome) {
-    var cpfAtual = tdCPF.text();
-    var nomeAtual = tdNome.text();
-
-    var htmlCPF = '<div class="input-group"><input id="beneficiario_Alt_CPF" type="text" class="form-control cpf-input" value="' + cpfAtual + '"></div>';
-    var htmlNome = '<div class="input-group"><input type="text" class="form-control nome-input" value="' + nomeAtual + '"></div>';
-
-    tdCPF.html(htmlCPF);
-    tdNome.html(htmlNome);
-
-    $('#beneficiario_Alt_CPF').mask('000.000.000-00', { reverse: true });
-
-    linha.addClass('em-edicao');
-    linha.find('.btn-alterar').text('Salvar').addClass('btn-success');
-}
-
-function salvarEdicao(linha) {
-    var tdCPF = linha.find('.cpf-input');
-    var tdNome = linha.find('.nome-input');
-
-    var novoCPF = tdCPF.val();
-    var novoNome = tdNome.val();
-
-    linha.find('td:eq(1)').text(novoCPF);
-    linha.find('td:eq(2)').text(novoNome);
-
-    linha.removeClass('em-edicao');
-    linha.find('.btn-alterar').text('Alterar').removeClass('btn-success');
 }

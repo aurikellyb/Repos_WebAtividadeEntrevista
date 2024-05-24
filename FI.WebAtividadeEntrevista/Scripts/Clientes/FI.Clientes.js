@@ -1,11 +1,5 @@
 ﻿$(document).ready(function () {
-    $('#CPF').mask('000.000.000-00', { reverse: true });
-    $('#CPFBeneficiario').mask('000.000.000-00', { reverse: true });
-
-    $('#btBeneficiarios').click(function (event) {
-        event.preventDefault();
-        $('#beneficarioForms').modal('show');
-    });
+    $('#CPF').mask('000.000.000-00');
 
     $('#formCadastro').submit(function (e) {
         e.preventDefault();
@@ -23,7 +17,7 @@
             url: urlPost,
             method: "POST",
             data: {
-                "Nome": $(this).find("#Nome").val(),
+                "NOME": $(this).find("#Nome").val(),
                 "CEP": $(this).find("#CEP").val(),
                 "Email": $(this).find("#Email").val(),
                 "Sobrenome": $(this).find("#Sobrenome").val(),
@@ -35,24 +29,34 @@
                 "CPF": $(this).find("#CPF").val(),
                 "Beneficiarios": beneficiarios
             },
-            error: function (r) {
-                if (r.status == 400)
-                    ModalDialog("Ocorreu um erro", r.responseJSON);
-                else if (r.status == 500)
-                    ModalDialog("Ocorreu um erro", "Ocorreu um erro interno no servidor.");
-            },
-            success: function (r) {
-                ModalDialog("Sucesso!", r)
-                $("#formCadastro")[0].reset();
-            }
+            error:
+                function (r) {
+                    if (r.status == 400)
+                        ModalDialog("Ocorreu um erro", r.responseJSON);
+                    else if (r.status == 500)
+                        ModalDialog("Ocorreu um erro", "Ocorreu um erro interno no servidor.");
+                },
+            success:
+                function (r) {
+                    ModalDialog("Sucesso!", r)
+                    $("#formCadastro")[0].reset();
+                }
         });
+    })
+
+    $('#btBeneficiario').click(function (event) {
+        event.preventDefault();
+        console.log('Botão clicado');
+        $('#beneficiarioForms').modal('show');
     });
+
+    $('#Beneficiario_CPF').mask('000.000.000-00', { reverse: true });
 
     $('#formIncluirBeneficiario').submit(function (e) {
         e.preventDefault();
 
-        var cpf = $('#CPFBeneficiario').val();
-        var nome = $('#NomeBeneficiario').val();
+        var cpf = $('#Beneficiario_CPF').val();
+        var nome = $('#Beneficiario_Nome').val();
 
         var newRow = '<tr>' +
             '<td class="hidden-xs hidden"></td>' +
@@ -66,9 +70,9 @@
 
         $('#tabelaBeneficiarios tbody').append(newRow);
 
-        $('#CPFBeneficiario').val('');
-        $('#NomeBeneficiario').val('');
-    });
+        $('#Beneficiario_CPF').val('');
+        $('#Beneficiario_Nome').val('');
+    })
 
     $('#tabelaBeneficiarios').on('click', 'button.btn-excluir', function () {
         var linha = $(this).closest('tr');
@@ -109,7 +113,8 @@
             $(this).addClass('btn-success');
         }
     });
-});
+
+})
 
 function ModalDialog(titulo, texto) {
     var random = Math.random().toString().replace('.', '');
